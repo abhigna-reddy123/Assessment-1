@@ -1,17 +1,21 @@
+
 import streamlit as st
 import os
-from google.cloud import speech
-from google.cloud import texttospeech
 
+import moviepy.editor
+from moviepy.audio.io.AudioFileClip import AudioFileClip
+from moviepy.video.io.VideoFileClip import VideoFileClip
+from openai.resources.audio import speech
 
-from moviepy.editor import VideoFileClip, AudioFileClip
-
+# Set up Azure OpenAI credentials
 AZURE_OPENAI_API_KEY = os.environ.get('22ec84421ec24230a3638d1b51e3a7dc')
 AZURE_OPENAI_ENDPOINT_URL = os.environ.get('https://internshala.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2024-08-01-preview')
+
+# Set up Google Cloud credentials
 GOOGLE_APPLICATION_CREDENTIALS = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
 
 def transcribe_audio(file_path):
-   
+    # Transcribe audio using Google Cloud Speech-to-Text
     client = speech.SpeechClient()
     with open(file_path, 'rb') as audio_file:
         audio = speech.RecognitionAudio(content=audio_file.read())
@@ -26,8 +30,17 @@ def transcribe_audio(file_path):
         transcription += result.alternatives[0].transcript
     return transcription
 
+
+class AzureKeyCredential:
+    pass
+
+
+class OpenAIServiceClient:
+    pass
+
+
 def correct_transcription(transcription):
-   
+    # Correct transcription using Azure OpenAI GPT-4o
     credential = AzureKeyCredential(AZURE_OPENAI_API_KEY)
     client = OpenAIServiceClient(credential, AZURE_OPENAI_ENDPOINT_URL)
     response = client.openai_api.create_completion(
@@ -40,8 +53,8 @@ def correct_transcription(transcription):
     corrected_transcription = response.result[0].text
     return corrected_transcription
 
-def generate_audio(transcription):
-   
+def generate_audio(transcription, texttospeech=None):
+    # Generate audio using Google Cloud Text-to-Speech
     client = texttospeech.TextToSpeechClient()
     synthesis_input = texttospeech.SynthesisInput(text=transcription)
     voice = texttospeech.VoiceSelectionParams(
@@ -58,8 +71,13 @@ def generate_audio(transcription):
     )
     return response.audio_content
 
+
+class AudioFileClip:
+    pass
+
+
 def replace_audio(video_file_path, audio_file_path):
-  
+    # Replace audio in video file using moviepy
     video_clip = VideoFileClip(video_file_path)
     audio_clip = AudioFileClip(audio_file_path)
     final_clip = video_clip.set_audio(audio_clip)
